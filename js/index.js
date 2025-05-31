@@ -4,6 +4,7 @@ const SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
 
 const videoListItems = document.querySelector('.video-list__items');
 
+const favoriteIds = JSON.parse(localStorage.getItem('favoriteYT') || '[]');
 
 const fetchTrendingVideos = async () => {
   try {
@@ -26,7 +27,6 @@ const fetchTrendingVideos = async () => {
 }
 
 const convertISOToReadbleDuration = (isoDuration) => {
-  console.log(isoDuration);
   isoDuration = isoDuration.replace('PT', '');
   let hours = 0;
   let minutes = 0;
@@ -69,7 +69,6 @@ const displayVideo = (videos) => {
   videoListItems.textContent = "";
 
   const listVideos = videos.items.map((video) => {
-    console.log(video.contentDetails.duration);
     const durationFormatted = convertISOToReadbleDuration(video.contentDetails.duration);
     const li = document.createElement('li');
     li.classList.add('video-list__item');
@@ -85,7 +84,10 @@ const displayVideo = (videos) => {
           <p class="video-card__channel">${video.snippet.channelTitle}</p>
           <p class="video-card__duration">${durationFormatted}</p>
         </a>
-        <button class="video-card__favorite video-card__favorite_active" type="button" aria-label="Добавить в избранное, ${video.snippet.title}">
+        <button class="video-card__favorite favorite ${
+        favoriteIds.includes(video.id) ? 'active' : ''}" type="button"
+        aria-label="Добавить в избранное, ${video.snippet.title}"
+        data-video-id='${video.id}'>
           <svg class="video-card__icon" >
             <use class="star-o" xlink:href="./image/sprite.svg#star-ob"></use>
             <use class="star" xlink:href="./image/sprite.svg#star"></use>
@@ -100,4 +102,26 @@ const displayVideo = (videos) => {
   videoListItems.append(...listVideos);
 }
 
-fetchTrendingVideos().then(displayVideo);
+const init = () => {
+  fetchTrendingVideos().then(displayVideo);
+
+  document.body.addEventListener('click', ({target}) => {
+    const itemFavorite = target.closest('.favorite');
+
+    if (itemFavorite) {
+      const videoId = itemFavorite.dataset.videoId;
+
+      if (favoriteIds.includes(videoId)) {
+        favoriteIds.splice(favoriteIds.indexOf(videoId), 1);
+        localStorage.setItem('favoriteYT', JSON.stringify(favoriteIds));
+        itemFavorite.classList.remove('active');
+      } else {
+        favoriteIds.push(videoId);
+        localStorage.setItem('favoriteYT', JSON.stringify(favoriteIds));
+        itemFavorite.classList.add('active');
+      }
+    }
+  });
+}
+
+init();
