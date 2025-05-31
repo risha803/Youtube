@@ -25,16 +25,16 @@ const fetchTrendingVideos = async () => {
   }
 }
 
-const formatDuration = (duration) => {
-  console.log(duration);
-  duration = duration.replace('PT', '');
+const convertISOToReadbleDuration = (isoDuration) => {
+  console.log(isoDuration);
+  isoDuration = isoDuration.replace('PT', '');
   let hours = 0;
   let minutes = 0;
   let seconds = 0;
 
-  const hoursMatch = duration.match(/(d+)H/);
-  const minutesMatch = duration.match(/(d+)M/);
-  const secondsMatch = duration.match(/(d+)S/);
+  const hoursMatch = isoDuration.match(/(\d+)H/);
+  const minutesMatch = isoDuration.match(/(\d+)M/);
+  const secondsMatch = isoDuration.match(/(\d+)S/);
 
   if (hoursMatch) {
     hours = parseInt(hoursMatch[1]);
@@ -70,7 +70,7 @@ const displayVideo = (videos) => {
 
   const listVideos = videos.items.map((video) => {
     console.log(video.contentDetails.duration);
-    const durationFormatted = formatDuration(video.contentDetails.duration);
+    const durationFormatted = convertISOToReadbleDuration(video.contentDetails.duration);
     const li = document.createElement('li');
     li.classList.add('video-list__item');
 
