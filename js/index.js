@@ -1,10 +1,32 @@
 const API_KEY = 'AIzaSyABo4r5vdqxqsTWH6aYu10soeiwZOD6YWE';
 const VIDEOS_URL = 'https://www.googleapis.com/youtube/v3/videos';
 const SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
+const router = new Navigo('/', {hash: true});
 
-const videoListItems = document.querySelector('.video-list__items');
+const main = document.querySelector('main');
+
+
 
 const favoriteIds = JSON.parse(localStorage.getItem('favoriteYT') || '[]');
+
+const preload = {
+  elem: document.createElement('div'),
+  text:'<p class="preload__text">загрузка...</p>',
+  append() {
+    main.style.display = "flex";
+    main.style.margin = "auto";
+    main.append(this.elem);
+  },
+  remove() {
+    this.elem.remove();
+  },
+  init() {
+    this.elem.className = 'preload';
+    this.elem.innerHTML = this.text;
+  },
+};
+
+preload.init();
 
 const fetchTrendingVideos = async () => {
   try {
@@ -186,23 +208,60 @@ const displayVideo = ({items: [video]}) => {
   `;
 };
 
+const createHero = () => {
+  const heroSection = document.createElement('section');
+  heroSection.classList.add('.section');
+  heroSection.innerHTML = `
+      <div class="container">
+        <div class="hero__container">
+          <a href="./favorite.html" class="hero__link ">
+            <span class="hero__link-text">Избранное</span>
+            <svg class="hero__icon">
+              <use xlink:href="image/sprite.svg#star-ob"></use>
+            </svg>
+          </a>
+          <svg viewBox="0 0 360 48" class="hero__logo" role="img" aria-label="Логотип сервиса RishaVideo">
+            <use xlink:href="./image/sprite.svg#logo-white"></use>
+          </svg>
+
+          <h1 class="hero__title">Смотри. Загружай. Создавай</h1>
+          <p class="hero__tagline">Удобный видеохостинг для тебя</p>
+        </div>
+      </div>
+      `
+
+      return heroSection;
+};
+
+const indexRoute = async () => {
+  main.textContent = '';
+  preload.append();
+  const hero = createHero();
+  const search = createSearch();
+  const videos = await fetchTrendingVideos();
+  preload.remove();
+  const listVideo = createListVideo(videos);
+};
+
+const videoRoute = () => {
+
+};
+
+const favoriteRoute = () => {
+
+};
+
+const searchRoute = () => {
+
+};
+
 const init = () => {
-  const currentPage = location.pathname.split('/').pop();
-
-  const urlSearchParams = new URLSearchParams(location.search);
-
-  const videoId = urlSearchParams.get('id');
-  const searchQuery = urlSearchParams.get('q');
-
-  if (currentPage === "index.html" || currentPage === '') {
-    fetchTrendingVideos().then(displayListVideo);
-  } else if (currentPage === "video.html" && videoId) {
-    fetchVideoData(videoId).then(displayVideo);
-  } else if (currentPage === "favorite.html") {
-    fetchFavoriteVideos().then(displayListVideo);
-  } else if (currentPage === "search.html" && searchQuery) {
-    console.log(currentPage);
-  }
+  router.on({
+    '/': indexRoute,
+    '/video/:id' : videoRoute,
+    '/favorite': favoriteRoute,
+    '/search': searchRoute,
+  }).resolve();
 
   document.body.addEventListener('click', ({target}) => {
     const itemFavorite = target.closest('.favorite');
