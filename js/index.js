@@ -6,7 +6,6 @@ const router = new Navigo('/', {hash: true});
 const main = document.querySelector('main');
 
 
-
 const favoriteIds = JSON.parse(localStorage.getItem('favoriteYT') || '[]');
 
 const preload = {
@@ -18,6 +17,8 @@ const preload = {
     main.append(this.elem);
   },
   remove() {
+        main.style.display = "";
+    main.style.margin = "";
     this.elem.remove();
   },
   init() {
@@ -132,8 +133,18 @@ const formatDate = (isoString) => {
   return formatter.format(date);
 };
 
-const displayListVideo = (videos) => {
-  videoListItems.textContent = "";
+const createListVideo = (videos, titleText, pagination) => {
+  const videoListSection = document.createElement('section');
+  videoListSection.classList.add("video-list");
+  const title = document.createElement('h2');
+  title.classList.add('video-list__title');
+  title.textContent = titleText;
+
+  const container = document.createElement('div');
+  container.classList.add('container');
+
+  const videoListItems = document.createElement('ul');
+  videoListItems.classList.add('video-list__items');
 
   const listVideos = videos.items.map((video) => {
     const li = document.createElement('li');
@@ -168,6 +179,8 @@ const displayListVideo = (videos) => {
   });
 
   videoListItems.append(...listVideos);
+
+  return videoListSection;
 };
 
 const displayVideo = ({items: [video]}) => {
@@ -233,14 +246,43 @@ const createHero = () => {
       return heroSection;
 };
 
+const createSearch = () => {
+  const searchSection = document.createElement('section');
+  searchSection.className = 'search';
+  const container = document.createElement('div');
+  container.className = 'container';
+  const title = document.createElement('h2');
+  title.className = 'visually-hidden';
+  title.textContent = 'Поиск';
+
+  const form = document.createElement('form');
+  form.className = 'search__form';
+  searchSection.append(container);
+  container.appemd(title, form);
+
+  form.innerHTML = `
+    <input type="text" class="search__input" name="search">
+    <button class="search__btn" type="submit">
+      <span>поиск</span>
+        <svg class="search__icon">
+          <use xlink:href="./image/sprite.svg#search"></use>
+        </svg>
+    </button>
+  `
+
+  return searchSection;
+};
+
 const indexRoute = async () => {
   main.textContent = '';
   preload.append();
   const hero = createHero();
   const search = createSearch();
   const videos = await fetchTrendingVideos();
+  console.log(videos);
   preload.remove();
   const listVideo = createListVideo(videos);
+  main.append(hero, search, listVideo);
 };
 
 const videoRoute = () => {

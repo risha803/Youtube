@@ -1,0 +1,23 @@
+{
+  "name": "youtube",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/risha803/Youtube.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/risha803/Youtube/issues"
+  },
+  "homepage": "https://github.com/risha803/Youtube#readme",
+  "dependencies": {
+    "navigo": "^8.11.1"
+  }
+}
