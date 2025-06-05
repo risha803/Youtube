@@ -205,9 +205,35 @@ const createListVideo = (videos, titleText, pagination) => {
 
     return li;
   });
+  
+  videoListItems.append(...listVideos);
   videoListSection.append(container);
   container.append(title, videoListItems);
-  videoListItems.append(...listVideos);
+
+  if (pagination) {
+    const paginationElem = document.createElement('div');
+    paginationElem.classList.add('pagination');
+
+    if (pagination.prev) {
+      const arrowPrev = document.createElement('a');
+      arrowPrev.classList.add('pagination__arrow');
+      arrowPrev.textContent = 'Предыдущая страница';
+      arrowPrev.href = `#/search?q=${pagination.searchQuery}&page=${pagination.prev}`;
+      paginationElem.append(arrowPrev);
+    }
+
+    if (pagination.next) {
+      const arrowNext = document.createElement('a');
+      arrowNext.classList.add('pagination__arrow');
+      arrowNext.textContent = 'Следующая страница';
+      arrowNext.href = `#/search?q=${pagination.searchQuery}&page=${pagination.next}`;
+      paginationElem.append(arrowNext);
+    }
+
+    videoListSection.append(paginationElem);
+  }
+
+  
 
   return videoListSection;
 };
@@ -292,7 +318,7 @@ const createSearch = () => {
   container.append(title, form);
 
   form.innerHTML = `
-    <input type="text" class="search__input" name="search">
+    <input type="text" class="search__input" name="search" placeholder="Найти видео..." required>
     <button class="search__btn" type="submit">
       <span>поиск</span>
         <svg class="search__icon">
@@ -300,6 +326,14 @@ const createSearch = () => {
         </svg>
     </button>
   `
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+  if (form.search.value.trim()) {
+    router.navigate(`/search?q=${form.search.value}`);
+  }
+    
+  });
 
   return searchSection;
 };
@@ -315,12 +349,12 @@ const createHeader = () => {
 
   headerElem.innerHTML = `
     <div class="container header__container">
-      <a href="/" class="header__link">
+      <a href="#" class="header__link">
         <svg viewBox="0 0 240 32" class="header__logo" role="img" aria-label="Логотип сервиса RishaVideo">
           <use xlink:href="./image/sprite.svg#logo-orange"></use>
         </svg>
       </a>
-      <a href="./favorite.html" class="header__link header__link-favorite">
+      <a href="#/favorite" class="header__link header__link-favorite">
         <span class="header__link-text">Избранное</span>
         <svg class="header__icon">
           <use xlink:href="./image/sprite.svg#star-ob"></use>
@@ -338,7 +372,6 @@ const indexRoute = async () => {
   const hero = createHero();
   const search = createSearch();
   const videos = await fetchTrendingVideos();
-  console.log(videos);
   preload.remove();
   const listVideo = createListVideo(videos, 'В тренде');
   main.append(hero, search, listVideo);
@@ -362,12 +395,40 @@ const videoRoute = async (ctx) => {
   main.append(listVideo);
 };
 
-const favoriteRoute = () => {
+const favoriteRoute = async () => {
+  document.body.prepend(createHeader());
+  main.textContent = '';
+  preload.append();
+
+  const search = createSearch();
+  const videos = await fetchFavoriteVideos();
+  preload.remove();
+  const listVideo = createListVideo(videos, 'Избранное');
+
+  main.append(search, listVideo);
 
 };
 
-const searchRoute = () => {
+const searchRoute = async (ctx) => {
+  const searchQuery = ctx.params.q;
+  const page = ctx.params.page;
 
+  if (searchQuery) {
+    document.body.prepend(createHeader());
+  main.textContent = '';
+  preload.append();
+
+  const search = createSearch();
+  const videos = await fetchSearchVideos(searchQuery, page);
+  preload.remove();
+  const listVideo = createListVideo(videos, 'Избранное', {
+    searchQuery,
+    next: videos.nextPageToken,
+    prev: videos.prevPageToken,
+  });
+
+  main.append(search, listVideo);
+  }
 };
 
 const init = () => {
